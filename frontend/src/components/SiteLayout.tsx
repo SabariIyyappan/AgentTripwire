@@ -9,7 +9,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
       <Navbar />
       <main className="relative">{children}</main>
       <footer className="border-t border-white/5 mt-20">
-        <div className="mx-auto max-w-6xl px-6 py-10 text-center text-sm text-muted-foreground">
+        <div className="mx-auto max-w-[1600px] px-8 py-10 text-center text-sm text-muted-foreground">
           AgentTripwire — Runtime safety gateway for autonomous AI agents.
         </div>
       </footer>

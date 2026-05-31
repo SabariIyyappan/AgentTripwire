@@ -12,7 +12,7 @@ export function Navbar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
     <header className="sticky top-0 z-50 w-full px-4">
-      <div className="mx-auto mt-4 flex max-w-7xl items-center justify-between gap-4 rounded-2xl px-4 py-2.5 glass">
+      <div className="mx-auto mt-4 flex max-w-[1800px] items-center justify-between gap-4 rounded-2xl px-5 py-2.5 glass">
         <Link to="/" className="flex items-center gap-2.5 px-2">
           <div className="relative h-9 w-9 rounded-lg bg-gradient-glow ring-glow flex items-center justify-center">
             <Shield className="h-5 w-5 text-[color:var(--primary-foreground)]" />

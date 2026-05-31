@@ -27,7 +27,7 @@ function Home() {
   return (
     <SiteLayout>
       {/* HERO */}
-      <section className="relative mx-auto flex min-h-[88vh] max-w-7xl flex-col items-center justify-center px-6 pt-10 text-center">
+      <section className="relative mx-auto flex min-h-[88vh] max-w-[1800px] flex-col items-center justify-center px-8 pt-10 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

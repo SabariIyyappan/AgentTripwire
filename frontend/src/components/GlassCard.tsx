@@ -40,7 +40,7 @@ export function SectionBlock({
   className?: string;
 }) {
   return (
-    <section className={cn("mx-auto w-full max-w-6xl px-6 py-20", className)}>
+    <section className={cn("mx-auto w-full max-w-[1600px] px-8 py-20", className)}>
       {(eyebrow || title || subtitle) && (
         <div className="mx-auto mb-12 max-w-3xl text-center">
           {eyebrow && (
