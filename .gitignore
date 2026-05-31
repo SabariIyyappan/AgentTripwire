@@ -1,0 +1,42 @@
+# Reference / context material (not part of the app)
+AgentTripwire Project Context.pdf
+ChatGPT Image*.png
+123.png
+prompt.txt
+_context/
+_pdf_dump.txt
+
+# Dependencies (any level)
+**/node_modules/
+.pnp
+.pnp.*
+
+# npm-generated lockfile — this project uses bun.lock as canonical
+package-lock.json
+
+# Build output (any level)
+**/dist/
+**/dist-ssr/
+**/.output/
+**/.nitro/
+**/.tanstack/
+**/.vinxi/
+
+# Env / secrets
+*.local
+.env
+.env.*
+.dev.vars
+.wrangler/
+
+# Logs
+*.log
+logs/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.sw?
