@@ -5,10 +5,6 @@ import { cn } from "@/lib/utils";
 const links = [
   { to: "/", label: "Home" },
   { to: "/demo", label: "Demo" },
-  { to: "/real-testing", label: "Real Testing" },
-  { to: "/architecture", label: "Architecture" },
-  { to: "/risk-engine", label: "Risk Engine" },
-  { to: "/policies", label: "Policies" },
   { to: "/reports", label: "Reports" },
 ] as const;
 
@@ -46,7 +42,7 @@ export function Navbar() {
           <Link to="/demo" className="hidden md:inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm hover:bg-white/10">
             <Zap className="h-3.5 w-3.5" /> Run Demo
           </Link>
-          <Link to="/real-testing" className="inline-flex items-center gap-2 rounded-lg bg-gradient-glow px-3.5 py-1.5 text-sm font-medium text-[color:var(--primary-foreground)] ring-glow">
+          <Link to="/demo" className="inline-flex items-center gap-2 rounded-lg bg-gradient-glow px-3.5 py-1.5 text-sm font-medium text-[color:var(--primary-foreground)] ring-glow">
             <Plug className="h-3.5 w-3.5" /> Connect Agent
           </Link>
         </div>

@@ -9,38 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RiskEngineRouteImport } from './routes/risk-engine'
-import { Route as RealTestingRouteImport } from './routes/real-testing'
-import { Route as PoliciesRouteImport } from './routes/policies'
 import { Route as DemoRouteImport } from './routes/demo'
-import { Route as ArchitectureRouteImport } from './routes/architecture'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReportsIndexRouteImport } from './routes/reports.index'
 import { Route as ReportsIdRouteImport } from './routes/reports.$id'
 
-const RiskEngineRoute = RiskEngineRouteImport.update({
-  id: '/risk-engine',
-  path: '/risk-engine',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RealTestingRoute = RealTestingRouteImport.update({
-  id: '/real-testing',
-  path: '/real-testing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PoliciesRoute = PoliciesRouteImport.update({
-  id: '/policies',
-  path: '/policies',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ArchitectureRoute = ArchitectureRouteImport.update({
-  id: '/architecture',
-  path: '/architecture',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -61,114 +37,45 @@ const ReportsIdRoute = ReportsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/architecture': typeof ArchitectureRoute
   '/demo': typeof DemoRoute
-  '/policies': typeof PoliciesRoute
-  '/real-testing': typeof RealTestingRoute
-  '/risk-engine': typeof RiskEngineRoute
   '/reports/$id': typeof ReportsIdRoute
   '/reports/': typeof ReportsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/architecture': typeof ArchitectureRoute
   '/demo': typeof DemoRoute
-  '/policies': typeof PoliciesRoute
-  '/real-testing': typeof RealTestingRoute
-  '/risk-engine': typeof RiskEngineRoute
   '/reports/$id': typeof ReportsIdRoute
   '/reports': typeof ReportsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/architecture': typeof ArchitectureRoute
   '/demo': typeof DemoRoute
-  '/policies': typeof PoliciesRoute
-  '/real-testing': typeof RealTestingRoute
-  '/risk-engine': typeof RiskEngineRoute
   '/reports/$id': typeof ReportsIdRoute
   '/reports/': typeof ReportsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/architecture'
-    | '/demo'
-    | '/policies'
-    | '/real-testing'
-    | '/risk-engine'
-    | '/reports/$id'
-    | '/reports/'
+  fullPaths: '/' | '/demo' | '/reports/$id' | '/reports/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/architecture'
-    | '/demo'
-    | '/policies'
-    | '/real-testing'
-    | '/risk-engine'
-    | '/reports/$id'
-    | '/reports'
-  id:
-    | '__root__'
-    | '/'
-    | '/architecture'
-    | '/demo'
-    | '/policies'
-    | '/real-testing'
-    | '/risk-engine'
-    | '/reports/$id'
-    | '/reports/'
+  to: '/' | '/demo' | '/reports/$id' | '/reports'
+  id: '__root__' | '/' | '/demo' | '/reports/$id' | '/reports/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ArchitectureRoute: typeof ArchitectureRoute
   DemoRoute: typeof DemoRoute
-  PoliciesRoute: typeof PoliciesRoute
-  RealTestingRoute: typeof RealTestingRoute
-  RiskEngineRoute: typeof RiskEngineRoute
   ReportsIdRoute: typeof ReportsIdRoute
   ReportsIndexRoute: typeof ReportsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/risk-engine': {
-      id: '/risk-engine'
-      path: '/risk-engine'
-      fullPath: '/risk-engine'
-      preLoaderRoute: typeof RiskEngineRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/real-testing': {
-      id: '/real-testing'
-      path: '/real-testing'
-      fullPath: '/real-testing'
-      preLoaderRoute: typeof RealTestingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/policies': {
-      id: '/policies'
-      path: '/policies'
-      fullPath: '/policies'
-      preLoaderRoute: typeof PoliciesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/demo': {
       id: '/demo'
       path: '/demo'
       fullPath: '/demo'
       preLoaderRoute: typeof DemoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/architecture': {
-      id: '/architecture'
-      path: '/architecture'
-      fullPath: '/architecture'
-      preLoaderRoute: typeof ArchitectureRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -197,11 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ArchitectureRoute: ArchitectureRoute,
   DemoRoute: DemoRoute,
-  PoliciesRoute: PoliciesRoute,
-  RealTestingRoute: RealTestingRoute,
-  RiskEngineRoute: RiskEngineRoute,
   ReportsIdRoute: ReportsIdRoute,
   ReportsIndexRoute: ReportsIndexRoute,
 }

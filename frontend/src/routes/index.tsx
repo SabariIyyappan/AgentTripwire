@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Shield, AlertTriangle, KeyRound, Bug, Eye, Brain, FileSearch, ShieldCheck, ArrowRight, Zap, Plug, Network } from "lucide-react";
 import { SiteLayout } from "@/components/SiteLayout";
 import { GlassCard, SectionBlock } from "@/components/GlassCard";
-import { AgentFlowDiagram } from "@/components/AgentFlowDiagram";
+import { Hero3DScene } from "@/components/Hero3DScene";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -73,16 +73,16 @@ function Home() {
           <Link to="/demo" className="inline-flex items-center gap-2 rounded-xl bg-gradient-glow px-5 py-3 text-sm font-medium text-[color:var(--primary-foreground)] ring-glow">
             <Zap className="h-4 w-4" /> Run Live Demo
           </Link>
-          <Link to="/real-testing" className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium hover:bg-white/10">
+          <Link to="/demo" className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium hover:bg-white/10">
             <Plug className="h-4 w-4" /> Try Real Testing
           </Link>
-          <Link to="/architecture" className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium text-muted-foreground hover:text-foreground">
-            View Architecture <ArrowRight className="h-4 w-4" />
+          <Link to="/reports" className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium text-muted-foreground hover:text-foreground">
+            View Reports <ArrowRight className="h-4 w-4" />
           </Link>
         </motion.div>
 
-        <div className="mt-16 w-full">
-          <AgentFlowDiagram protectedMode />
+        <div className="mt-14 w-full">
+          <Hero3DScene />
         </div>
       </section>
 
@@ -168,7 +168,7 @@ function Home() {
             Bring ChatGPT, Claude, Gemini, or a custom agent into the Real Testing Lab.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link to="/real-testing" className="inline-flex items-center gap-2 rounded-xl bg-gradient-glow px-5 py-3 text-sm font-medium text-[color:var(--primary-foreground)] ring-glow">
+            <Link to="/demo" className="inline-flex items-center gap-2 rounded-xl bg-gradient-glow px-5 py-3 text-sm font-medium text-[color:var(--primary-foreground)] ring-glow">
               <Plug className="h-4 w-4" /> Connect Agent
             </Link>
             <Link to="/demo" className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium hover:bg-white/10">

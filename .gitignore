@@ -10,6 +10,9 @@ _pdf_dump.txt
 .pnp
 .pnp.*
 
+# npm-generated lockfile — this project uses bun.lock as canonical
+package-lock.json
+
 # Build output (any level)
 **/dist/
 **/dist-ssr/

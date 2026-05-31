@@ -21,8 +21,10 @@ export const Route = createFileRoute("/reports/$id")({
   ),
 });
 
+type Report = (typeof SAMPLE_REPORTS)[number];
+
 function ReportDetail() {
-  const { report } = Route.useLoaderData();
+  const { report } = Route.useLoaderData() as { report: Report };
   return (
     <SiteLayout>
       <SectionBlock>
