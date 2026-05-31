@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { to: "/", label: "Home" },
-  { to: "/demo", label: "Demo" },
+  { to: "/demo", label: "Run Scan" },
   { to: "/reports", label: "Reports" },
 ] as const;
 

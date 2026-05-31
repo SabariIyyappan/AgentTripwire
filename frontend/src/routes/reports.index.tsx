@@ -75,7 +75,7 @@ function Reports() {
                 <GlassCard>
                   <h3 className="mb-3 text-sm font-semibold uppercase tracking-widest text-[color:var(--risk-shareable)]"><Check className="mr-1.5 inline h-4 w-4" /> Approved domains</h3>
                   <div className="flex flex-wrap gap-1.5 text-xs">
-                    {["acmevendor.com", "internal.local", "crm.internal", "*.lovable.app"].map((d) => (
+                    {["acmevendor.com", "internal.local", "crm.internal", "api.ourapp.local"].map((d) => (
                       <span key={d} className="rounded-md border border-[color:var(--risk-shareable)]/30 bg-[color:var(--risk-shareable)]/10 px-2 py-1 font-mono text-[color:var(--risk-shareable)]">{d}</span>
                     ))}
                   </div>

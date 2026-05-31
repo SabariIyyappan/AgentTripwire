@@ -1,12 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
-  Play, Shield, ShieldOff, RotateCcw, Globe, Building2, KeyRound, Webhook,
-  Bot, Sparkles, Stars, PlugZap, Server, ShieldAlert, Check, X, Wand2,
+  Shield, ShieldOff, RotateCcw, Globe, Building2, FileText, AlertTriangle, ArrowUpRight,
+  Bot, Sparkles, Stars, PlugZap, Server, ShieldAlert, Check, X, Wand2, Play,
 } from "lucide-react";
 import { SiteLayout } from "@/components/SiteLayout";
 import { GlassCard, SectionBlock } from "@/components/GlassCard";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AgentFlowDiagram } from "@/components/AgentFlowDiagram";
 import { TraceTimeline, type TraceStep } from "@/components/TraceTimeline";
 import { TripwireDecisionCard } from "@/components/TripwireDecisionCard";
@@ -40,170 +41,261 @@ const PROTECTED_STEPS: TraceStep[] = [
   { label: "Safety report generated", status: "ok", detail: "rpt_001" },
 ];
 
-type Phase = "idle" | "running";
+type Mode = "idle" | "unprotected" | "protected";
 
 function Demo() {
-  const decision = useMemo(() => inspect(ATTACK_TOOL_CALL), []);
-  const [phase, setPhase] = useState<Phase>("idle");
-  const [runKey, setRunKey] = useState(0);
-
-  function replay() {
-    setPhase("running");
-    setRunKey((k) => k + 1);
-  }
-
   return (
     <SiteLayout>
-      {/* ===================== ATTACK REPLAY ===================== */}
-      <SectionBlock
-        eyebrow="Prompt Injection Attack Replay"
-        title="Same agent. Same task. Two very different outcomes."
-        subtitle="A sales research agent is asked to browse AcmeVendor, summarize pricing, and update Sarah's CRM record. The vendor page hides instructions telling the agent to exfiltrate API keys and customer emails."
-      >
-        <div className="mx-auto flex max-w-2xl flex-wrap items-center justify-center gap-3">
-          <button onClick={replay} className="inline-flex items-center gap-2 rounded-xl bg-gradient-glow px-5 py-3 text-sm font-medium text-[color:var(--primary-foreground)] ring-glow transition">
-            <Play className="h-4 w-4" /> Run Replay (both)
-          </button>
-          <button onClick={() => setPhase("idle")} className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium text-muted-foreground hover:text-foreground">
-            <RotateCcw className="h-4 w-4" /> Reset
-          </button>
-        </div>
-      </SectionBlock>
-
-      {/* Scenario context */}
-      <section className="mx-auto max-w-6xl px-6">
-        <div className="grid gap-4 md:grid-cols-3">
-          <GlassCard>
-            <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-[color:var(--neon-cyan)]"><Globe className="h-3.5 w-3.5" /> Malicious vendor page</div>
-            <pre className="mt-3 whitespace-pre-wrap break-words rounded-md bg-black/40 p-3 text-xs leading-relaxed text-muted-foreground">{MALICIOUS_VENDOR_PAGE}</pre>
-          </GlassCard>
-          <GlassCard>
-            <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-[color:var(--neon-cyan)]"><Building2 className="h-3.5 w-3.5" /> Mock CRM record</div>
-            <pre className="mt-3 rounded-md bg-black/40 p-3 text-xs leading-relaxed text-muted-foreground">{JSON.stringify(MOCK_CRM, null, 2)}</pre>
-          </GlassCard>
-          <GlassCard>
-            <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-[color:var(--neon-cyan)]"><KeyRound className="h-3.5 w-3.5" /> Attack target</div>
-            <div className="mt-3 space-y-3 text-sm">
-              <div>
-                <div className="text-xs text-muted-foreground">Fake API key</div>
-                <code className="font-mono text-[color:var(--risk-high)]">sk-demo-fake-secret-123456</code>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground">Attacker webhook</div>
-                <div className="flex items-start gap-2 font-mono text-[color:var(--risk-high)]"><Webhook className="mt-0.5 h-4 w-4 shrink-0" /> https://attacker.example/collect</div>
-              </div>
-            </div>
-          </GlassCard>
-        </div>
-      </section>
-
-      {/* Side-by-side live traces */}
-      <SectionBlock eyebrow="Live Trace" title="Unprotected vs Protected — side by side">
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Unprotected column */}
-          <GlassCard className="min-h-[440px] border-[color:var(--risk-high)]/20">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="inline-flex items-center gap-2 text-base font-semibold text-[color:var(--risk-high)]">
-                <ShieldOff className="h-4 w-4" /> Unprotected Run
-              </h3>
-              {phase === "running" && (
-                <span className="rounded-full border border-[color:var(--risk-high)]/40 bg-[color:var(--risk-high)]/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-[color:var(--risk-high)]">Fake secret leaked</span>
-              )}
-            </div>
-            {phase === "idle" ? (
-              <IdlePanel />
-            ) : (
-              <TraceTimeline key={`u-${runKey}`} steps={UNPROTECTED_STEPS} />
-            )}
-          </GlassCard>
-
-          {/* Protected column */}
-          <GlassCard glow className="min-h-[440px]">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="inline-flex items-center gap-2 text-base font-semibold text-[color:var(--risk-shareable)]">
-                <Shield className="h-4 w-4" /> Protected with AgentTripwire
-              </h3>
-              {phase === "running" && (
-                <span className="rounded-full border border-[color:var(--risk-shareable)]/40 bg-[color:var(--risk-shareable)]/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-[color:var(--risk-shareable)]">Attack blocked</span>
-              )}
-            </div>
-            {phase === "idle" ? (
-              <IdlePanel />
-            ) : (
-              <TraceTimeline key={`p-${runKey}`} steps={PROTECTED_STEPS} />
-            )}
-          </GlassCard>
+      <Tabs defaultValue="demo" className="w-full pt-8">
+        <div className="mx-auto flex max-w-7xl justify-center px-6">
+          <TabsList className="h-11 gap-1 rounded-xl border border-white/10 bg-white/5 p-1 backdrop-blur">
+            <TabsTrigger value="demo" className="gap-2 rounded-lg px-5 py-2 data-[state=active]:bg-white/10 data-[state=active]:text-foreground data-[state=active]:shadow-none">
+              <Play className="h-4 w-4" /> Demo Run
+            </TabsTrigger>
+            <TabsTrigger value="real" className="gap-2 rounded-lg px-5 py-2 data-[state=active]:bg-white/10 data-[state=active]:text-foreground data-[state=active]:shadow-none">
+              <PlugZap className="h-4 w-4" /> Real Testing
+            </TabsTrigger>
+          </TabsList>
         </div>
 
-        {/* Flow diagram */}
-        <div className="mt-6">
-          <GlassCard>
-            <div className="mb-4 text-center">
-              <h3 className="text-base font-semibold">Agent → Tool Flow</h3>
-              <p className="text-xs text-muted-foreground">AI Agent → Tool Call → Tripwire → Decision → Tools</p>
-            </div>
-            <AgentFlowDiagram protectedMode />
-          </GlassCard>
-        </div>
-      </SectionBlock>
-
-      {/* Decision */}
-      <SectionBlock eyebrow="Decision" title="Tripwire's verdict on this tool call">
-        <div className="mx-auto max-w-2xl">
-          <TripwireDecisionCard decision={decision} toolName="http.post" destination="https://attacker.example/collect" />
-        </div>
-      </SectionBlock>
-
-      {/* Comparison table */}
-      <SectionBlock eyebrow="Replay Comparison" title="Step-by-step outcome">
-        <GlassCard className="p-0 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="text-left text-xs uppercase tracking-widest text-muted-foreground">
-              <tr className="border-b border-white/10">
-                <th className="p-4">Step</th>
-                <th className="p-4">Unprotected</th>
-                <th className="p-4">With AgentTripwire</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ["Read vendor page", "ok:Read", "ok:Read"],
-                ["Extract content", "ok:Extracted", "ok:Extracted (quarantined)"],
-                ["Load CRM data", "ok:Loaded", "ok:Loaded"],
-                ["Attempt external POST", "bad:Sent", "good:Blocked"],
-                ["Fake secret leaked", "bad:Yes — API key exfiltrated", "good:No — secret never left"],
-                ["CRM safely updated", "bad:Skipped / corrupted", "good:Pricing summary written"],
-                ["Safety report generated", "bad:None", "good:rpt_001 generated"],
-              ].map((row, i) => (
-                <tr key={i} className="border-b border-white/5 last:border-0">
-                  <td className="p-4 font-medium">{row[0]}</td>
-                  {(row.slice(1) as string[]).map((c, j) => {
-                    const [kind, text] = c.split(/:(.+)/);
-                    const cls = kind === "bad" ? "text-[color:var(--risk-high)]" : kind === "good" ? "text-[color:var(--risk-shareable)]" : "text-muted-foreground";
-                    return <td key={j} className={cn("p-4", cls)}>{text}</td>;
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </GlassCard>
-      </SectionBlock>
-
-      {/* ===================== REAL TESTING LAB ===================== */}
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-      </div>
-      <RealTestingLab />
+        <TabsContent value="demo">
+          <DemoDashboard />
+        </TabsContent>
+        <TabsContent value="real">
+          <RealTestingLab />
+        </TabsContent>
+      </Tabs>
     </SiteLayout>
   );
 }
 
-function IdlePanel() {
+/* ============================ DEMO DASHBOARD ============================ */
+
+function DemoDashboard() {
+  const [mode, setMode] = useState<Mode>("idle");
+  const [runKey, setRunKey] = useState(0);
+  const decision = useMemo(() => inspect(ATTACK_TOOL_CALL), []);
+
+  const steps = mode === "unprotected" ? UNPROTECTED_STEPS : mode === "protected" ? PROTECTED_STEPS : [];
+
+  function run(m: Mode) {
+    setMode(m);
+    setRunKey((k) => k + 1);
+  }
+
   return (
-    <div className="flex h-72 flex-col items-center justify-center text-center text-muted-foreground">
-      <Play className="h-8 w-8 opacity-50" />
-      <p className="mt-3 text-sm">Press “Run Replay” to play both runs.</p>
-    </div>
+    <section className="mx-auto max-w-7xl px-6 pt-10 pb-16">
+      {/* header */}
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-widest text-[color:var(--neon-cyan)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--neon-cyan)] shadow-[0_0_8px_currentColor]" /> Live Demo Dashboard
+          </div>
+          <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">AgentTripwire vs. Prompt Injection</h1>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">Side-by-side unprotected vs. firewalled agent on the same task.</p>
+        </div>
+        <button onClick={() => setMode("idle")} className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3.5 py-2 text-sm hover:bg-white/10">
+          <RotateCcw className="h-4 w-4" /> Reset Demo
+        </button>
+      </div>
+
+      {/* 3-column dashboard */}
+      <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)_360px]">
+        {/* ---------- LEFT: scenario + buttons + CRM ---------- */}
+        <div className="space-y-4">
+          <GlassCard className="space-y-4">
+            <div className="text-[11px] uppercase tracking-widest text-[color:var(--neon-cyan)]">Scenario</div>
+            <div>
+              <h3 className="text-lg font-semibold">Prompt Injection Data Exfiltration</h3>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                “Research AcmeVendor, summarize pricing, and update the CRM record for Sarah.”
+                The vendor page hides instructions telling the agent to exfiltrate API keys and customer emails.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <button
+                onClick={() => run("unprotected")}
+                className={cn(
+                  "flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition",
+                  mode === "unprotected"
+                    ? "border-[color:var(--risk-high)] bg-[color:var(--risk-high)]/20 text-[color:var(--risk-high)]"
+                    : "border-[color:var(--risk-high)]/40 bg-[color:var(--risk-high)]/10 text-[color:var(--risk-high)] hover:bg-[color:var(--risk-high)]/20",
+                )}
+              >
+                <ShieldOff className="h-4 w-4" /> Run Unprotected Agent
+              </button>
+              <button
+                onClick={() => run("protected")}
+                className={cn(
+                  "flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium ring-glow transition",
+                  mode === "protected"
+                    ? "bg-gradient-glow text-[color:var(--primary-foreground)]"
+                    : "border border-[color:var(--neon-cyan)]/40 bg-[color:var(--neon-cyan)]/10 text-[color:var(--neon-cyan)] hover:bg-[color:var(--neon-cyan)]/20",
+                )}
+              >
+                <Shield className="h-4 w-4" /> Run With AgentTripwire
+              </button>
+              <button onClick={() => setMode("idle")} className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs text-muted-foreground hover:text-foreground">
+                <RotateCcw className="h-3.5 w-3.5" /> Reset
+              </button>
+            </div>
+          </GlassCard>
+
+          {/* Mock CRM */}
+          <GlassCard>
+            <div className="mb-3 flex items-center gap-2 text-[11px] uppercase tracking-widest text-[color:var(--neon-cyan)]">
+              <Building2 className="h-3.5 w-3.5" /> Mock CRM
+            </div>
+            <dl className="space-y-1.5 text-xs">
+              {Object.entries(MOCK_CRM).map(([k, v]) => (
+                <div key={k} className="flex items-start justify-between gap-3 border-b border-white/5 py-1 last:border-0">
+                  <dt className="text-muted-foreground">{k}</dt>
+                  <dd className={cn("text-right font-mono break-all", k === "apiKey" ? "text-[color:var(--risk-high)]" : "")}>{String(v)}</dd>
+                </div>
+              ))}
+            </dl>
+          </GlassCard>
+
+          {/* Injected page */}
+          <GlassCard>
+            <div className="mb-2 flex items-center gap-2 text-[11px] uppercase tracking-widest text-[color:var(--neon-cyan)]">
+              <Globe className="h-3.5 w-3.5" /> Malicious vendor page
+            </div>
+            <pre className="whitespace-pre-wrap break-words rounded-md bg-black/40 p-2.5 text-[10px] leading-relaxed text-muted-foreground">{MALICIOUS_VENDOR_PAGE}</pre>
+          </GlassCard>
+        </div>
+
+        {/* ---------- CENTER: flow + live trace + comparison ---------- */}
+        <div className="space-y-4">
+          <GlassCard className="overflow-hidden">
+            <div className="mb-2 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-[color:var(--neon-cyan)]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--neon-cyan)] shadow-[0_0_8px_currentColor]" /> Live Demo
+              </div>
+              <span
+                className="rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest"
+                style={{
+                  borderColor: mode === "unprotected" ? "var(--risk-high)" : mode === "protected" ? "var(--risk-shareable)" : "var(--border)",
+                  color: mode === "unprotected" ? "var(--risk-high)" : mode === "protected" ? "var(--risk-shareable)" : "var(--muted-foreground)",
+                }}
+              >
+                {mode === "unprotected" ? "Fake secret leaked" : mode === "protected" ? "Attack blocked" : "Idle"}
+              </span>
+            </div>
+            <div className="-my-4 flex justify-center">
+              <div className="origin-center scale-[0.78]">
+                <AgentFlowDiagram protectedMode={mode !== "unprotected"} />
+              </div>
+            </div>
+          </GlassCard>
+
+          {/* Live trace timeline */}
+          <GlassCard className="min-h-[260px]">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+                <FileText className="h-4 w-4 text-[color:var(--neon-cyan)]" /> Live Trace Timeline
+              </h3>
+              <span className="rounded-full bg-white/5 px-2.5 py-0.5 text-[10px] text-muted-foreground">{steps.length} events</span>
+            </div>
+            {mode === "idle" ? (
+              <div className="flex h-44 flex-col items-center justify-center text-center text-muted-foreground">
+                <FileText className="h-7 w-7 opacity-40" />
+                <p className="mt-3 text-sm">Pick a scenario and run the agent to see the live trace.</p>
+              </div>
+            ) : (
+              <TraceTimeline key={`${mode}-${runKey}`} steps={steps} />
+            )}
+          </GlassCard>
+
+          {/* Replay comparison */}
+          <GlassCard className="overflow-hidden p-0">
+            <div className="flex items-center justify-between px-5 py-4">
+              <h3 className="text-sm font-semibold">Replay Comparison</h3>
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Same task, different outcome</span>
+            </div>
+            <table className="w-full text-xs">
+              <thead className="text-left uppercase tracking-widest text-muted-foreground">
+                <tr className="border-y border-white/10">
+                  <th className="px-5 py-2.5 font-medium">Step</th>
+                  <th className="px-3 py-2.5 font-medium text-[color:var(--risk-high)]">Unprotected</th>
+                  <th className="px-3 py-2.5 font-medium text-[color:var(--risk-shareable)]">Protected</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Read vendor page", "ok:allowed", "ok:allowed"],
+                  ["Extract content", "ok:allowed", "ok:allowed"],
+                  ["Attempt external POST", "bad:sent", "good:blocked"],
+                  ["Fake secret leaked", "bad:yes", "good:no"],
+                  ["CRM safely updated", "bad:no", "good:yes"],
+                ].map((row, i) => (
+                  <tr key={i} className="border-b border-white/5 last:border-0">
+                    <td className="px-5 py-2.5 font-medium text-foreground/90">{row[0]}</td>
+                    {(row.slice(1) as string[]).map((c, j) => {
+                      const [kind, text] = c.split(/:(.+)/);
+                      const cls = kind === "bad" ? "text-[color:var(--risk-high)]" : kind === "good" ? "text-[color:var(--risk-shareable)]" : "text-muted-foreground";
+                      return <td key={j} className={cn("px-3 py-2.5 font-mono", cls)}>{text}</td>;
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </GlassCard>
+        </div>
+
+        {/* ---------- RIGHT: safety report ---------- */}
+        <div>
+          <motion.div key={mode} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+            {mode === "idle" && (
+              <GlassCard className="flex min-h-[420px] flex-col items-center justify-center text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl glass">
+                  <Shield className="h-6 w-6 text-[color:var(--neon-cyan)]" />
+                </div>
+                <p className="mt-4 max-w-[16rem] text-sm text-muted-foreground">
+                  Run an agent to see the Tripwire decision, risk score, and safety report.
+                </p>
+              </GlassCard>
+            )}
+
+            {mode === "unprotected" && (
+              <GlassCard glow className="space-y-5 border-[color:var(--risk-high)]/30">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-[color:var(--risk-high)]">
+                  <AlertTriangle className="h-4 w-4" /> No protection — breach
+                </div>
+                <div>
+                  <div className="text-3xl font-semibold text-[color:var(--risk-high)]">Data leaked</div>
+                  <p className="mt-1 text-sm text-muted-foreground">The agent followed the injected instruction and exfiltrated secrets with no interception.</p>
+                </div>
+                <div className="space-y-2 text-xs">
+                  <Row k="Attempted tool" v="http.post" />
+                  <Row k="Destination" v="attacker.example/collect" />
+                </div>
+                <div>
+                  <div className="mb-2 text-xs uppercase tracking-widest text-muted-foreground">Leaked data</div>
+                  <div className="space-y-1.5">
+                    {["sk-demo-fake-secret-123456", "sarah@example.com"].map((d) => (
+                      <div key={d} className="rounded-md border border-[color:var(--risk-high)]/30 bg-[color:var(--risk-high)]/10 px-2.5 py-1.5 font-mono text-[11px] text-[color:var(--risk-high)]">{d}</div>
+                    ))}
+                  </div>
+                </div>
+                <button onClick={() => run("protected")} className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-glow px-4 py-2.5 text-sm font-medium text-[color:var(--primary-foreground)] ring-glow">
+                  <Shield className="h-4 w-4" /> Re-run with AgentTripwire
+                </button>
+              </GlassCard>
+            )}
+
+            {mode === "protected" && (
+              <div className="space-y-3">
+                <TripwireDecisionCard decision={decision} toolName="http.post" destination="https://attacker.example/collect" />
+                <Link to="/reports/$id" params={{ id: "rpt_001" }} className="flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-sm hover:bg-white/10">
+                  <FileText className="h-4 w-4" /> View full safety report <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            )}
+          </motion.div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -436,7 +528,7 @@ function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex items-start justify-between gap-4 border-b border-white/5 py-1.5 last:border-0">
       <dt className="text-muted-foreground">{k}</dt>
-      <dd className="text-right font-mono text-xs">{v}</dd>
+      <dd className="text-right font-mono text-xs break-all">{v}</dd>
     </div>
   );
 }
