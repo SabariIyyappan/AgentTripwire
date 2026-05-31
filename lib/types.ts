@@ -184,6 +184,36 @@ export interface ShellResult {
   executedAt: string;
 }
 
+// ─── Tripwire Context & Gateway ──────────────────────────────────────────────
+
+export type TripwireContext = {
+  runId?: string;
+  scenarioId?: string;
+  toolName: string;
+  toolArgs: Record<string, unknown>;
+  source: "user" | "system" | "browser_content" | "tool_output" | "agent";
+  sourceTrust: "trusted" | "untrusted";
+  userTask?: string;
+  previousSteps?: string[];
+  destinationDomain?: string;
+  dataClasses: string[];
+  isExternalDestination: boolean;
+  isApprovedDestination: boolean;
+  isDestructiveAction: boolean;
+  rawInput?: string;
+};
+
+export type RiskResult = {
+  score: number;
+  level: RiskLevel;
+  reasons: string[];
+};
+
+export type TripwireGatewayResult = {
+  analysis: TripwireAnalysis;
+  context: TripwireContext;
+};
+
 // ─── API Response Shapes ──────────────────────────────────────────────────────
 
 export interface ApiSuccess<T> {

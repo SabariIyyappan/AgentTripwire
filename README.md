@@ -224,6 +224,110 @@ curl http://localhost:3000/api/reports/<reportId>
 
 ---
 
+---
+
+## Phase 4 — Tripwire gateway: deterministic risk & policy engine (current)
+
+Adds the core inspection layer that Phase 5 will wire into the protected agent run. Every proposed tool call can now be evaluated — without executing anything — and a `BLOCK`, `ALLOW`, `ASK_HUMAN`, or `REWRITE` decision returned.
+
+> **Phase 4 does not yet protect the agent run. It only builds the inspection/risk/policy layer. The protected run will be Phase 5.**
+
+### New modules
+
+| Module | Role |
+|--------|------|
+| `lib/tripwire/detectors.ts` | Regex + heuristic detectors for emails, API keys, data classes, destination domains, destructive shell patterns |
+| `lib/tripwire/contextBuilder.ts` | Normalises a proposed tool call into a `TripwireContext` (domain, trust level, data classes, destructive flag) |
+| `lib/tripwire/riskEngine.ts` | Deterministic scoring (0–100) → `LOW` / `MEDIUM` / `HIGH` risk level with human-readable reasons |
+| `lib/tripwire/policyEngine.ts` | Maps risk + context to `TripwireDecision` with override rules and safe alternatives |
+| `lib/tripwire/gateway.ts` | Single entry point: `inspectToolCall(input)` → `TripwireGatewayResult` |
+| `lib/tripwire/index.ts` | Re-exports all public functions |
+
+### Risk scoring rules
+
+| Condition | Points |
+|-----------|--------|
+| Data sent to external unapproved domain | +40 |
+| Payload contains API-key-like value | +30 |
+| Destructive shell command detected | +30 |
+| Payload contains email or customer data | +25 |
+| Source is untrusted (browser content / tool output) | +25 |
+| Action is irreversible or external write | +20 |
+| **Cap** | **100** |
+
+Risk levels: `0–39` → `LOW` · `40–69` → `MEDIUM` · `70–100` → `HIGH`
+
+### Policy decision rules
+
+| Condition | Decision |
+|-----------|----------|
+| `http.post` to unapproved external domain + sensitive data | `BLOCK` |
+| `shell.exec` with destructive command | `BLOCK` |
+| Score ≥ 70 | `BLOCK` |
+| Score 40–69 | `ASK_HUMAN` |
+| Read-only browser action, score < 40 | `ALLOW` |
+| CRM update with no sensitive data, trusted source | `ALLOW` |
+| Score 0–39 (fallback) | `ALLOW` |
+
+### New types added to `lib/types.ts`
+
+| Type | Purpose |
+|------|---------|
+| `TripwireContext` | Normalised context for a proposed tool call |
+| `RiskResult` | Score + level + reasons from the risk engine |
+| `TripwireGatewayResult` | `{ analysis: TripwireAnalysis; context: TripwireContext }` |
+
+### Dev test route
+
+```
+GET /api/dev/tripwire-test
+```
+
+Runs 4 deterministic test cases and reports pass/fail for each:
+
+| Test | Input | Expected |
+|------|-------|----------|
+| Safe browser open | `browser.open https://acmevendor.example` (user) | `ALLOW / LOW` |
+| Malicious HTTP exfiltration | `http.post attacker.example` with fake API key + email (browser content) | `BLOCK / HIGH` |
+| Dangerous shell command | `shell.exec rm -rf ./logs` (browser content) | `BLOCK / HIGH` |
+| Safe CRM update | `crm.updateCustomer` with public summary (agent) | `ALLOW / LOW` |
+
+```bash
+curl http://localhost:3000/api/dev/tripwire-test
+```
+
+Response shape:
+
+```jsonc
+{
+  "ok": true,
+  "data": {
+    "tests": [
+      {
+        "name": "Safe browser open",
+        "passed": true,
+        "expectedDecision": "ALLOW",
+        "actualDecision": "ALLOW",
+        "expectedRiskLevel": "LOW",
+        "actualRiskLevel": "LOW",
+        "result": { "analysis": { ... }, "context": { ... } }
+      },
+      {
+        "name": "Malicious HTTP exfiltration",
+        "passed": true,
+        "expectedDecision": "BLOCK",
+        "actualDecision": "BLOCK",
+        "expectedRiskLevel": "HIGH",
+        "actualRiskLevel": "HIGH"
+      }
+    ],
+    "summary": { "passed": 4, "failed": 0 }
+  }
+}
+```
+
+---
+
 ## Phases roadmap
 
 | Phase | Scope |
@@ -231,8 +335,7 @@ curl http://localhost:3000/api/reports/<reportId>
 | **1** | Project skeleton, types, mock storage, API routes ✅ |
 | **2** | Mock world + deterministic tool layer ✅ |
 | **3** | Unprotected vulnerable agent run ✅ |
-| 4 | Tripwire gateway — protected agent run with BLOCK decisions |
-| 5 | Risk classifier + PII detector |
-| 6 | Policy engine (ALLOW / BLOCK / REWRITE / ASK) |
-| 7 | Frontend dashboard + live trace view |
-| 8 | Replay harness (unprotected vs protected side-by-side) |
+| **4** | Tripwire gateway — risk engine + policy engine ✅ |
+| 5 | Protected agent run — wire Tripwire into the agent loop |
+| 6 | Frontend dashboard + live trace view |
+| 7 | Replay harness (unprotected vs protected side-by-side) |
