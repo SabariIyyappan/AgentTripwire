@@ -213,8 +213,6 @@ function DemoDashboard() {
 
   function run(m: Mode) { setMode(m); setRunKey((k) => k + 1); }
   function pick(id: string) { setScenarioId(id); setMode("idle"); setConsentOpen(false); }
-  // Quick-test buttons: select a scenario AND immediately run it through the firewall
-  function runTest(id: string) { setScenarioId(id); setConsentOpen(false); setMode("protected"); setRunKey((k) => k + 1); }
 
   const pillLabel = mode === "idle" ? "Idle" : mode === "protected" ? DECISION_LABEL[decision.decision] : risky ? "Breach" : "Executed";
   const pillColor = mode === "idle" ? "var(--border)" : mode === "protected" ? expectedColor(decision.decision) : risky ? "var(--risk-high)" : "var(--risk-shareable)";
@@ -271,9 +269,9 @@ function DemoDashboard() {
             </div>
             <p className="rounded-md border border-white/5 bg-white/[0.03] p-2.5 text-xs leading-relaxed text-muted-foreground">{scenario.task}</p>
 
-            {/* Quick test buttons — one click selects a sample scenario and runs it through the firewall */}
+            {/* Quick test buttons — one click SELECTS a sample scenario; nothing runs until you press a Run button below */}
             <div>
-              <div className="mb-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">Quick tests — each gives a different verdict</div>
+              <div className="mb-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">Quick tests — select a scenario, then press Run</div>
               <div className="grid grid-cols-5 gap-1.5">
                 {SCENARIOS.map((s, i) => {
                   const active = s.id === scenarioId;
@@ -281,7 +279,7 @@ function DemoDashboard() {
                   return (
                     <button
                       key={s.id}
-                      onClick={() => runTest(s.id)}
+                      onClick={() => pick(s.id)}
                       title={`${s.name} → ${DECISION_LABEL[s.expected]}`}
                       className={cn(
                         "rounded-md border px-1 py-2 text-xs font-semibold transition",
@@ -533,6 +531,7 @@ function RealTestingLab() {
   const [actionType, setActionType] = useState<ToolCall["actionType"]>("external_transfer");
   const [decision, setDecision] = useState<ReturnType<typeof inspect> | null>(null);
   const [consentOpen, setConsentOpen] = useState(false);
+  const [runKey, setRunKey] = useState(0);
 
   function handleInspect() {
     let parsed: Record<string, unknown> = {};
@@ -550,6 +549,7 @@ function RealTestingLab() {
     };
     const d = inspect(call);
     setDecision(d);
+    setRunKey((k) => k + 1);
     if (d.decision === "require_user_consent") setConsentOpen(true);
   }
 
@@ -664,11 +664,30 @@ function RealTestingLab() {
               <Wand2 className="h-4 w-4" /> Inspect with AgentTripwire
             </button>
           </GlassCard>
-          <div>
+          <div className="space-y-4">
+            {/* Animated live scan flow — mirrors the demo dashboard */}
+            <GlassCard className="overflow-hidden">
+              <div className="mb-5 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-[color:var(--neon-cyan)]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--neon-cyan)] shadow-[0_0_8px_currentColor]" /> Live Scan
+                </div>
+                <span
+                  className="rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest"
+                  style={{
+                    borderColor: decision ? expectedColor(decision.decision) : "var(--border)",
+                    color: decision ? expectedColor(decision.decision) : "var(--muted-foreground)",
+                  }}
+                >
+                  {decision ? DECISION_LABEL[decision.decision] : "Idle"}
+                </span>
+              </div>
+              <LiveScanFlow mode={decision ? "protected" : "idle"} decision={decision} runKey={runKey} />
+            </GlassCard>
+
             {decision ? (
               <TripwireDecisionCard decision={decision} toolName={toolName} destination={destination} />
             ) : (
-              <GlassCard className="flex h-full min-h-[300px] items-center justify-center text-center text-sm text-muted-foreground">
+              <GlassCard className="flex min-h-[200px] items-center justify-center text-center text-sm text-muted-foreground">
                 Inspect a tool call to see its risk score, classification, and decision.
               </GlassCard>
             )}
