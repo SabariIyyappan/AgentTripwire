@@ -512,6 +512,112 @@ curl http://localhost:3000/api/reports/<protectedReportId>
 
 ---
 
+---
+
+## Phase 7 — Demo hardening, contract polish, reset & report export (current)
+
+Adds operational endpoints for reliable judge demos: a state reset, a readiness check, a machine-readable frontend contract, and a report export route.
+
+> **All dangerous behaviour remains simulated. No real external HTTP calls. No real shell commands. Reset is dev/demo-only and only clears in-memory state.**
+
+### New endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/dev/reset` | Reset all in-memory state (runs, reports, webhook deliveries, CRM store) |
+| `GET`  | `/api/demo/status` | Lightweight readiness check — 5 named checks, all must pass |
+| `GET`  | `/api/frontend-contract` | Machine-readable endpoint list + recommended UI panels |
+| `GET`  | `/api/reports/:id/export?format=markdown` | Export a safety report as markdown |
+| `GET`  | `/api/reports/:id/export?format=json` | Export a safety report as JSON |
+
+### Recommended demo flow
+
+```bash
+# 1. Reset state so repeated runs are clean
+curl -X POST http://localhost:3000/api/dev/reset
+
+# 2. Confirm everything is ready
+curl http://localhost:3000/api/demo/status
+
+# 3. Run the before/after comparison (the money shot)
+curl -X POST http://localhost:3000/api/replay
+
+# 4. Show the comparison (use IDs from step 3)
+curl http://localhost:3000/api/runs/<unprotectedRunId>
+curl http://localhost:3000/api/runs/<protectedRunId>
+curl http://localhost:3000/api/reports/<protectedReportId>
+
+# 5. Export the protected safety report as markdown
+curl "http://localhost:3000/api/reports/<protectedReportId>/export?format=markdown"
+
+# 6. Export as JSON
+curl "http://localhost:3000/api/reports/<protectedReportId>/export?format=json"
+```
+
+### Demo reset response
+
+```jsonc
+{
+  "ok": true,
+  "data": {
+    "reset": true,
+    "cleared": { "runs": true, "reports": true, "webhookDeliveries": true, "crmStore": true },
+    "timestamp": "..."
+  }
+}
+```
+
+### Demo status response
+
+```jsonc
+{
+  "ok": true,
+  "data": {
+    "service": "agent-tripwire",
+    "ready": true,
+    "checks": [
+      { "name": "scenarios",                "status": "pass", "detail": "3 scenarios available" },
+      { "name": "malicious_vendor_fixture", "status": "pass", "detail": "Hidden prompt injection fixture detected" },
+      { "name": "mock_crm",                 "status": "pass", "detail": "cust_001 Sarah Chen available" },
+      { "name": "tripwire_http_block",      "status": "pass", "detail": "Malicious HTTP exfiltration blocked with HIGH risk" },
+      { "name": "tripwire_browser_allow",   "status": "pass", "detail": "Safe browser open allowed with LOW risk" }
+    ],
+    "recommendedDemoFlow": [ ... ],
+    "timestamp": "..."
+  }
+}
+```
+
+If any check fails, `ready` becomes `false` but the route still returns `ok: true` so the frontend can render partial status.
+
+### Report export (markdown)
+
+```jsonc
+{
+  "ok": true,
+  "data": {
+    "format": "markdown",
+    "markdown": "# AgentTripwire Safety Report\n\n- **Report ID:** ...\n..."
+  }
+}
+```
+
+Markdown includes: report ID, run ID, scenario, mode, attack summary, tool call stats, PII findings, narrative, and recommended policy hardening.
+
+### New modules
+
+| Path | Role |
+|------|------|
+| `lib/demo/status.ts` | `runDemoStatus()` — runs 5 lightweight checks without a full agent replay |
+| `lib/demo/contract.ts` | `getFrontendContract()` — static/deterministic endpoint + UI panel manifest |
+| `lib/demo/smokeTest.ts` | `runDemoSmokeTest()` — full end-to-end smoke test (unprotected leaks, protected doesn't, replay confirms) |
+| `app/api/dev/reset/route.ts` | `POST /api/dev/reset` |
+| `app/api/demo/status/route.ts` | `GET /api/demo/status` |
+| `app/api/frontend-contract/route.ts` | `GET /api/frontend-contract` |
+| `app/api/reports/[reportId]/export/route.ts` | `GET /api/reports/:id/export` |
+
+---
+
 ## Phases roadmap
 
 | Phase | Scope |
@@ -522,4 +628,5 @@ curl http://localhost:3000/api/reports/<protectedReportId>
 | **4** | Tripwire gateway — risk engine + policy engine ✅ |
 | **5** | Protected agent run — wire Tripwire into the agent loop ✅ |
 | **6** | Replay comparison endpoint — before/after in one call ✅ |
-| 7 | Frontend dashboard + live trace view |
+| **7** | Demo hardening — reset, status, contract, report export ✅ |
+| 8 | Frontend dashboard + live trace view |
