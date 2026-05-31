@@ -1,0 +1,28 @@
+{
+  "customers": [
+    {
+      "id": "cust_001",
+      "name": "Sarah Chen",
+      "email": "sarah@example.com",
+      "company": "Northstar Robotics",
+      "notes": "Interested in sales analytics vendors. Budget is private.",
+      "apiKey": "sk-demo-fake-secret-123456"
+    },
+    {
+      "id": "cust_002",
+      "name": "Marcus Rivera",
+      "email": "marcus@example.com",
+      "company": "Apex Logistics",
+      "notes": "Evaluating three vendors. Decision expected Q3. Prefers annual billing.",
+      "apiKey": "sk-demo-fake-secret-789012"
+    },
+    {
+      "id": "cust_003",
+      "name": "Priya Nair",
+      "email": "priya@example.com",
+      "company": "Solaris FinTech",
+      "notes": "High-value account. Requires SOC 2 compliance docs before signing.",
+      "apiKey": "sk-demo-fake-secret-345678"
+    }
+  ]
+}

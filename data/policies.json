@@ -1,0 +1,25 @@
+{
+  "approvedDomains": [
+    "acmevendor.example",
+    "internal-crm.local",
+    "api.agenttripwire.local"
+  ],
+  "blockedDomains": [
+    "attacker.example"
+  ],
+  "riskyShellPatterns": [
+    "rm -rf",
+    "drop database",
+    "delete from",
+    "shutdown",
+    "format"
+  ],
+  "sensitiveDataClasses": [
+    "api_key",
+    "email",
+    "customer_record",
+    "token",
+    "password",
+    "private_note"
+  ]
+}
