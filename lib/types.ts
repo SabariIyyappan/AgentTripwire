@@ -113,14 +113,25 @@ export interface AttackSummary {
   decisionReason: string;
 }
 
+export interface ReplayTimelineRow {
+  label: string;
+  unprotected: string;
+  protected: string;
+  outcome: "unsafe" | "safe" | "blocked" | "info";
+}
+
 export interface ReplayComparison {
-  unprotectedRunId: string;
-  protectedRunId: string;
-  unprotectedOutcome: string;
-  protectedOutcome: string;
-  stepsBlocked: number;
-  dataLeaked: boolean;
-  dataProtected: boolean;
+  verdict: string;
+  unprotectedLeaked: boolean;
+  protectedLeaked: boolean;
+  leakPrevented: boolean;
+  unprotectedWebhookDeliveries: number;
+  protectedWebhookDeliveries: number;
+  blockedActions: number;
+  protectedBlockedHttpExfiltration: boolean;
+  protectedBlockedShellCommand: boolean;
+  keyProofs: string[];
+  timeline: ReplayTimelineRow[];
 }
 
 export interface SafetyReport {
