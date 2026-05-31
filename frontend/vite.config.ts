@@ -14,7 +14,16 @@ export default defineConfig(({ mode }) => {
 
   return {
     define,
-    server: { host: "::", port: 8080 },
+    server: {
+      host: "::",
+      port: 8080,
+      proxy: {
+        "/api": {
+          target: env.VITE_BACKEND_URL ?? "http://localhost:3000",
+          changeOrigin: true,
+        },
+      },
+    },
     resolve: {
       alias: { "@": `${process.cwd()}/src` },
       dedupe: [
