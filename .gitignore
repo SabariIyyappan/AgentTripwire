@@ -22,6 +22,10 @@ package-lock.json
 **/.tanstack/
 **/.vinxi/
 
+# Next.js (backend)
+backend/.next/
+backend/tsconfig.tsbuildinfo
+
 # Env / secrets
 *.local
 .env
